@@ -10,4 +10,4 @@ abs(transaction_revenue - revenue_sum) / transaction_revenue
    group by 1
 ) using(date)
 where
-    abs(transaction_revenue - revenue_sum) / transaction_revenue > 0.05
+    abs(transaction_revenue - revenue_sum) / transaction_revenue > 0.01
