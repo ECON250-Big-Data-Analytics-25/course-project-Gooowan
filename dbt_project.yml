@@ -32,6 +32,9 @@ clean-targets:         # directories to be removed by `dbt clean`
 models:
   econ250_2025:
     # Config indicated by + and applies to all files under models/example/
+    +persist_docs:
+      relation: true
+      columns: true
     example:
       +materialized: view
     staging:

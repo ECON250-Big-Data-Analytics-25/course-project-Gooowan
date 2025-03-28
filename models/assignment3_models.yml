@@ -1,0 +1,39 @@
+version: 2
+
+models:
+  - name: stg_assignment3_uk_wiki
+    description: "Staging model combining desktop and mobile Wikipedia views data with extracted date/time components"
+    columns:
+      - name: title
+      - name: datehour
+      - name: views
+      - name: src
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['desktop', 'mobile']
+      - name: date
+      - name: day_of_week_bq
+      - name: day_of_week
+      - name: hour_of_day
+
+  - name: int_assignment3_uk_wiki
+    description: "Intermediate model classifying Wikipedia pages into meta and regular pages"
+    columns:
+      - name: title
+      - name: datehour
+      - name: views
+      - name: src
+      - name: date
+      - name: day_of_week
+      - name: hour_of_day
+      - name: is_meta_page
+      - name: meta_page_type
+
+  - name: fct_assignment3_top200
+    description: "Mart model with top-200 articles ranked by total views and mobile views percentage"
+    columns:
+      - name: title
+      - name: total_views
+      - name: total_mobile_views
+      - name: mobile_percentage
