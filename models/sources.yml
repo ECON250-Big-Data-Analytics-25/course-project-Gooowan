@@ -20,26 +20,41 @@ sources:
             period: day
       - name: week3_arxiv
       - name: week5_web_transactions
+        description: |
+          Transaction-level data. Can be combined with week5_web_visits using `visitId` field
+          
+          May contain duplicates, for **deduplicated** data look at model
         columns:
+          - name: date
+            description: date for the transactions
+
+          - name: visitId
+            description: '{{ doc("visitid_description") }}'
           - name: transaction.transactionId
             data_tests:
-            - not_null:
-                config:
-                  severity: error
-                  error_if: ">10"
-                  warn_if: ">0"
+              - not_null:
+                  config:
+                    severity: error
+                    error_if: ">10"
+                    warn_if: ">0"
       - name: week5_web_visits
+        columns:
+          - name: visitId
+            description: '{{ doc("visitid_description") }}'
       - name: week5_hits
+        columns:
+          - name: visitId
+            description: '{{ doc("visitid_description") }}'
 
 
-  - name: google_trends
-    database: bigquery-public-data
-    schema: google_trends
-    tables:
-      - name: international_top_terms
-        loaded_at_field: TIMESTAMP(refresh_date)
-        freshness:
-          filter: "refresh_date >= current_date() - 7"
-          error_after:
-            count: 2
-            period: day
+      - name: google_trends
+        database: bigquery-public-data
+        schema: google_trends
+        tables:
+          - name: international_top_terms
+            loaded_at_field: TIMESTAMP(refresh_date)
+            freshness:
+              filter: "refresh_date >= current_date() - 7"
+              error_after:
+                count: 2
+                period: day

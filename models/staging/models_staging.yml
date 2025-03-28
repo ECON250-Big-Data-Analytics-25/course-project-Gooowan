@@ -19,3 +19,5 @@ models:
                 severity: error
                 error_if: ">100"
                 warn_if: ">0"
+      - name: visitId
+        description: '{{ doc("visitid_description") }}'
