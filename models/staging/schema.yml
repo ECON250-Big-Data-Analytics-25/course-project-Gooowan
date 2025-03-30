@@ -1,0 +1,60 @@
+version: 2
+
+sources:
+  - name: bigquery_public
+    database: bigquery-public-data
+    schema: google_trends
+    tables:
+      - name: international_top_terms
+  - name: external_sources
+    database: econ250-2025
+    schema: vsolomatin
+    tables:
+      - name: sheet_external
+        description: "External Google Sheets raw data about influencer campaigns"
+        columns:
+          - name: campaign_id
+            tests:
+              - not_null
+          - name: date
+          - name: influencer_name
+          - name: platform
+          - name: post_type
+          - name: followers
+          - name: engagement_rate
+          - name: cost
+          - name: impressions
+          - name: notes
+
+      - name: week3_arxiv_extended
+        description: "Extended Arxiv dataset from Week 3"
+        columns:
+          - name: id
+            description: "Unique identifier for each article"
+            tests:
+              - not_null
+              - unique
+          - name: title
+            description: "Title of the article"
+          - name: category
+            description: "Category of the article"
+          - name: category_code
+            description: "Code representing the category"
+          - name: published_date
+            description: "Date when the article was published"
+          - name: updated_date
+            description: "Last updated date of the article"
+          - name: authors
+            description: "List of all authors"
+          - name: first_author
+            description: "First author of the paper"
+          - name: summary
+            description: "Abstract or summary of the paper"
+          - name: summary_word_count
+            description: "Word count of the summary"
+          - name: publish_month
+            description: "Month in which the paper was published"
+          - name: arxiv_url
+            description: "URL link to the arXiv page"
+          - name: pdf_url
+            description: "Direct URL to the PDF file"
