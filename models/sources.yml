@@ -46,15 +46,26 @@ sources:
           - name: visitId
             description: '{{ doc("visitid_description") }}'
 
+      - name: assignment5_input
+        columns:
+          - name: datehour
+            description: Timestamp of the view event.
+          - name: wiki
+            description: Language/version of Wikipedia (e.g., uk, uk.m).
+          - name: title
+            description: Title of the Wikipedia page.
+          - name: views
+            description: Number of views for the given title at that datehour.
 
-      - name: google_trends
-        database: bigquery-public-data
-        schema: google_trends
-        tables:
-          - name: international_top_terms
-            loaded_at_field: TIMESTAMP(refresh_date)
-            freshness:
-              filter: "refresh_date >= current_date() - 7"
-              error_after:
-                count: 2
-                period: day
+
+  - name: google_trends
+    database: bigquery-public-data
+    schema: google_trends
+    tables:
+      - name: international_top_terms
+        loaded_at_field: TIMESTAMP(refresh_date)
+        freshness:
+          filter: "refresh_date >= current_date() - 7"
+          error_after:
+            count: 2
+            period: day
