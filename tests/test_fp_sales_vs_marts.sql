@@ -5,7 +5,7 @@ with sales_full as (
 
 mart_sales as (
     select round(sum(total_revenue), 2) as total_sales
-    from {{ ref('mart_order_performance') }}
+    from {{ ref('fp_fct_order_performance') }}
 )
 
 select *
