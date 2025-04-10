@@ -1,0 +1,180 @@
+version: 2
+
+models:
+  - name: stg_fp_orders
+    description: Cleaned and enriched version of the fp_orders source table.
+    columns:
+      - name: order_id
+        description: Unique identifier of the order.
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: Customer placing the order.
+        tests:
+          - not_null
+      - name: order_status
+        description: Status of the order.
+      - name: order_purchase_timestamp
+        description: Timestamp when the order was placed.
+      - name: order_approved_at
+        description: Timestamp when the order was approved.
+      - name: order_delivered_carrier_date
+        description: Timestamp when the order was handed to the carrier.
+      - name: order_delivered_customer_date
+        description: Timestamp when the order was delivered to the customer.
+      - name: order_estimated_delivery_date
+        description: Estimated delivery date.
+      - name: order_delivery_delay
+        description: Number of days between purchase and delivery.
+      - name: is_delivered
+        description: Boolean indicating if order was delivered.
+      - name: is_shipped
+        description: Boolean indicating if order was shipped.
+
+  - name: stg_fp_order_items
+    description: Cleaned fp_order_items with consistent datatypes, and structured item information.
+    columns:
+      - name: order_id
+        description: Identifier of the order.
+        tests:
+          - not_null
+      - name: order_item_id
+        description: Sequence number of the item within the order.
+      - name: product_id
+        description: Identifier of the product in the item.
+        tests:
+          - not_null
+      - name: seller_id
+        description: Identifier of the seller supplying the item.
+        tests:
+          - not_null
+      - name: shipping_limit_date
+        description: Deadline for the seller to ship the item.
+      - name: price
+        description: Price paid for the item.
+      - name: freight_value
+        description: Freight cost for the item.
+
+  - name: stg_fp_order_payments
+    description: Cleaned payment data with payment method details and total value.
+    columns:
+      - name: order_id
+        description: Identifier of the order.
+        tests:
+          - not_null
+      - name: payment_sequential
+        description: Sequence number for multiple payments on the same order.
+      - name: payment_type
+        description: Method of payment (e.g., credit_card, boleto).
+      - name: payment_installments
+        description: Number of payment installments chosen.
+      - name: payment_value
+        description: Amount paid for the order.
+      - name: is_credit_card
+        description: Boolean indicating if payment was made via credit card.
+      - name: is_boleto
+        description: Boolean indicating if payment was made via boleto.
+
+  - name: stg_fp_products
+    description: Cleaned product metadata including category, name/description length, and dimensions.
+    columns:
+      - name: product_id
+        description: Unique identifier of the product.
+        tests:
+          - unique
+          - not_null
+      - name: product_category_name
+        description: Product category in Portuguese (missing replaced with 'unknown').
+      - name: product_name_length
+        description: Length of the product name.
+      - name: product_description_length
+        description: Length of the product description.
+      - name: product_photos_qty
+        description: Number of photos associated with the product.
+      - name: product_weight_g
+        description: Weight of the product in grams.
+      - name: product_length_cm
+        description: Package length of the product in cm.
+      - name: product_height_cm
+        description: Package height of the product in cm.
+      - name: product_width_cm
+        description: Package width of the product in cm.
+
+  - name: stg_fp_sellers
+    description: Sellers with validated identifiers and location metadata.
+    columns:
+      - name: seller_id
+        description: Unique identifier of the seller.
+        tests:
+          - unique
+          - not_null
+      - name: seller_zip_code_prefix
+        description: Zip code prefix of the seller.
+      - name: seller_city
+        description: City where the seller is located.
+      - name: seller_state
+        description: State where the seller is located.
+
+  - name: stg_fp_customers
+    description: Customer metadata with IDs and geographic information.
+    columns:
+      - name: customer_id
+        description: Unique identifier of the customer.
+        tests:
+          - unique
+          - not_null
+      - name: customer_unique_id
+        description: Persistent unique ID across multiple orders.
+      - name: customer_zip_code_prefix
+        description: Zip code prefix of the customer.
+      - name: customer_city
+        description: City where the customer is located.
+      - name: customer_state
+        description: State where the customer is located.
+
+  - name: fp_sales_full
+    description: >
+      Denormalized order-level fact table combining order info, products, categories, and payments.
+      Includes:
+      - Aggregated payment and item data via ARRAY<STRUCT>
+      - Translated product category name
+      - Derived features (delivery delay, delivery status)
+      Partitioned by `order_purchase_timestamp` for performance.
+      Clustered by `order_status` and `product_category_name_english`.
+    columns:
+      - name: order_id
+        description: Unique identifier of the order.
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: Customer who placed the order.
+      - name: order_status
+        description: Status of the order (delivered, shipped, etc.)
+      - name: order_purchase_timestamp
+        description: Timestamp when the purchase was made (partition column).
+      - name: order_approved_at
+        description: When the order was approved.
+      - name: order_delivered_carrier_date
+        description: When the order was handed over to the carrier.
+      - name: order_delivered_customer_date
+        description: Final delivery timestamp to customer.
+      - name: order_estimated_delivery_date
+        description: Estimated delivery date.
+      - name: order_delivery_delay
+        description: Calculated delay between purchase and actual delivery.
+      - name: is_delivered
+        description: Boolean indicating if the order was delivered.
+      - name: is_shipped
+        description: Boolean indicating if the order was shipped.
+      - name: order_items
+        description: Array of structs for each item (product_id, seller_id, price, freight).
+      - name: total_order_cost
+        description: Sum of item price and freight for the order.
+      - name: payment_details
+        description: Array of structs describing each payment method used for the order.
+      - name: total_payment
+        description: Total amount paid for the order.
+      - name: product_category_name_english
+        description: Translated category of the main product in the order (if any).

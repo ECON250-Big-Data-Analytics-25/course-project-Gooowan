@@ -1,0 +1,127 @@
+version: 2
+
+sources:
+  - name: vsolomatin
+    database: econ250-2025
+    schema: vsolomatin
+    tables:
+      - name: fp_orders
+        description: Orders placed by customers with various status updates and timestamps.
+        columns:
+          - name: order_id
+            description: Unique identifier for the order.
+            tests: [unique, not_null]
+          - name: customer_id
+            description: Unique identifier for the customer who placed the order.
+            tests: [not_null]
+          - name: order_status
+            description: Status of the order (e.g., delivered, shipped, canceled).
+          - name: order_purchase_timestamp
+            description: Timestamp when the purchase was made.
+          - name: order_approved_at
+            description: Timestamp when the order was approved.
+          - name: order_delivered_carrier_date
+            description: Timestamp when the order was handed to the logistics carrier.
+          - name: order_delivered_customer_date
+            description: Timestamp when the customer received the order.
+          - name: order_estimated_delivery_date
+            description: Estimated delivery date given at purchase time.
+
+      - name: fp_order_items
+        description: Details of items within each order, including seller, price, and shipping.
+        columns:
+          - name: order_id
+            description: Foreign key referring to fp_orders.
+            tests: [not_null]
+          - name: order_item_id
+            description: Sequential item number in the order (first item is 1, second is 2, etc.).
+          - name: product_id
+            description: Foreign key referring to fp_products.
+            tests: [not_null]
+          - name: seller_id
+            description: Foreign key referring to fp_sellers.
+            tests: [not_null]
+          - name: shipping_limit_date
+            description: Deadline for the seller to ship the product.
+          - name: price
+            description: Price paid for the product (in BRL).
+          - name: freight_value
+            description: Freight cost paid by the customer (in BRL).
+
+      - name: fp_order_payments
+        description: Payment information for each order, such as payment type and installment details.
+        columns:
+          - name: order_id
+            description: Foreign key referring to fp_orders.
+            tests: [not_null]
+          - name: payment_sequential
+            description: Sequential number identifying a payment attempt for the same order.
+          - name: payment_type
+            description: Method of payment (e.g., credit card, boleto).
+          - name: payment_installments
+            description: Number of installments chosen by the customer.
+          - name: payment_value
+            description: Total amount paid for the order (in BRL).
+
+      - name: fp_products
+        description: Metadata about products, including category, size, and weight.
+        columns:
+          - name: product_id
+            description: Unique identifier for the product.
+            tests: [unique, not_null]
+          - name: product_category_name
+            description: Category of the product in Portuguese.
+          - name: product_name_length
+            description: Length of the product name.
+          - name: product_description_length
+            description: Length of the product description.
+          - name: product_photos_qty
+            description: Number of product images.
+          - name: product_weight_g
+            description: Product weight in grams.
+          - name: product_length_cm
+            description: Product package length in centimeters.
+          - name: product_height_cm
+            description: Product package height in centimeters.
+          - name: product_width_cm
+            description: Product package width in centimeters.
+
+      - name: fp_sellers
+        description: Sellers' information including ID and location.
+        columns:
+          - name: seller_id
+            description: Unique identifier for the seller.
+            tests: [unique, not_null]
+          - name: seller_zip_code_prefix
+            description: First digits of the seller’s zip code.
+            tests: [not_null]
+          - name: seller_city
+            description: City of the seller.
+          - name: seller_state
+            description: State of the seller.
+
+      - name: fp_customers
+        description: Customer information including ID and location.
+        columns:
+          - name: customer_id
+            description: Unique identifier for the customer.
+            tests: [unique, not_null]
+          - name: customer_unique_id
+            description: Unique identifier across multiple orders.
+          - name: customer_zip_code_prefix
+            description: First digits of the customer’s zip code.
+            tests: [not_null]
+          - name: customer_city
+            description: City of the customer.
+          - name: customer_state
+            description: State of the customer.
+
+      - name: fp_product_category_name_translation
+        description: Translations of product categories into English.
+        columns:
+          - name: product_category_name
+            description: Category of the product in Portuguese.
+            tests: [not_null]
+          - name: product_category_name_english
+            description: Category of the product in English.
+            tests: [not_null]

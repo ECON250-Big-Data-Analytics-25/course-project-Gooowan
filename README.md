@@ -1,114 +1,73 @@
-Welcome to your new dbt project!
+## 🧠 Final Project Overview
 
-# Installation
+This project is the culmination of an end-to-end dbt pipeline built on top of an e-commerce dataset (originally from Kaggle’s Brazilian Olist marketplace). It follows best practices in modern analytics engineering, including modular staging, testing, documentation, and analytical marts for business users.
 
-The following tutorial assumes you're already familiar with git and command line usage.
+---
 
-## Getting the code to your local machine
-1. Fork this github repository into your local account
-
-2. Copy it to your local machine: `git clone https://github.com/your_account_name/econ250_2025.git`
-
-
-
-## gcloud authentication
-
-To run queries from your command line, you'll first need to install `gcloud` utility.
-
-Follow the instructions here: https://cloud.google.com/sdk/docs/install. After installation you should have `gcloud` command available for running in the terminal.
-
-Now, try to authenticate with your **kse email** using the following command: 
-
-```bash
-gcloud auth application-default login \
-  --scopes=https://www.googleapis.com/auth/bigquery,\
-https://www.googleapis.com/auth/drive.readonly,\
-https://www.googleapis.com/auth/iam.test,\
-https://www.googleapis.com/auth/cloud-platform
-```
-
-Now, when you run the following commands something similar should be response: 
-
-```bash
-$ gcloud auth list
-
-     Credentialed Accounts
-ACTIVE  ACCOUNT
-*       o_omelchenko@kse.org.ua
+### 📦 Data Flow Overview
 
 ```
-To set the active project, run the following: 
-
-```bash
-gcloud config set project econ250-2025
+Raw Sources (CSV files from Kaggle)
+        ↓
+  Sources Defined in dbt (`fp_sources.yml`)
+        ↓
+  Staging Layer (cleaned + typed `stg_fp_*` models)
+        ↓
+  Fact Layer (`fp_sales_full`): denormalized order-level dataset
+        ↓
+  Analytical Marts (`mart_*` models): metrics for business insight
+        ↓
+  Custom Tests + Documentation → BigQuery UI + dbt Docs
 ```
 
+---
 
-## venv and libraries
-Prerequisites: having Python installed on your machine. 
-Following instructions are for Linux or WSL; if you'd like to run Windows - please refer to the documentation below.
+### ✅ Step-by-step Flow
 
-```bash
+#### 1. **Source Layer**
+- All 9 source tables were declared in `fp_sources.yml` with detailed column descriptions from Kaggle.
+- Source-level tests were added (e.g. `unique`, `not_null`) for key fields.
 
-# change directory to the one you just copied from github
-cd econ250_2025 
+#### 2. **Staging Models (`stg_fp_*`)**
+- Cleaned raw data, converted data types, handled missing values, and added derived columns (e.g. `is_delivered`, `order_delivery_delay`).
+- Each staging model corresponds to one raw table and serves as a contract for downstream transformations.
 
-# create and activate venv
-python3 -m venv env 
-source env/bin/activate
+#### 3. **Fact Table (`fp_sales_full`)**
+- A fully denormalized model combining data from multiple sources at the **order level**.
+- Uses:
+  - `ARRAY<STRUCT>` to aggregate multi-row fields (e.g. payments, order items).
+  - Derived fields for time and status logic.
+  - Incremental strategy with partitioning on `order_purchase_timestamp`.
+- Serves as a **single source of truth** for analytical marts.
 
-pip install -r requirements.txt
+#### 4. **Analytical Mart Models**
+Each of these models answers specific business questions:
 
-```
+| Model                     | Purpose                                                                 |
+|--------------------------|-------------------------------------------------------------------------|
+| `fp_fct_order_performance` | Track daily/monthly order count and revenue by status and category.     |
+| `fp_fct_customer_behavior` | Identify new vs. returning customers, frequency, and customer value.     |
+| `fp_fct_product_performance` | Show top-performing products by category, date, and revenue.            |
+| `fp_fct_seller_analytics`  | Analyze seller sales volume and fulfillment delays by month.             |
+| `fp_fct_payment_analysis`  | Examine payment type trends, average installments, and regional usage.   |
 
-If everything is installed correctly, you should run the following commands successfully: 
+Each is materialized as a table and intended for reporting, dashboarding, or stakeholder review.
 
+#### 5. **Custom Data Tests**
+Two logic-driven tests were added to ensure cross-model consistency:
+- Compare **total revenue** between `fp_sales_full` and `fp_fct_order_performance`.
+- Check **order count consistency** between `fp_sales_full` and `fp_fct_customer_behavior`.
 
-```
-$ dbt --version
+These tests are located in the `/tests` folder and run with every `dbt test`.
 
-Core:
-  - installed: 1.9.3
-  - latest:    1.9.3 - Up to date!
+---
 
-Plugins:
-  - bigquery: 1.9.1 - Up to date!
-```
+### 🚀 Summary
 
+This project demonstrates:
+- Clean and testable transformation pipelines
+- Analytical modeling aligned with business needs
+- Cross-model data validation
+- Fully documented data assets for end users
 
-For more detailed reference, refer to the official documentation here: 
-- https://docs.getdbt.com/docs/core/pip-install
-- https://docs.getdbt.com/docs/core/connect-data-platform/bigquery-setup#local-oauth-gcloud-setup
-
-## Adjusting the configuration
-
-You'll need to specify your own dataset to save your models to. To do so, navigate to the `profiles.yml` in the root directory of the project, and replace `o_omelchenko` with your bigquery dataset name with which you have been working previously.
-
-
-
-
-## Final check
-
-Try running the following command:
-- dbt run
-
-If everything is set up well, you will see similar output: 
-
-```log
-❯ dbt run
-01:18:56  Running with dbt=1.9.3
-01:18:57  Registered adapter: bigquery=1.9.1
-01:18:57  Found 2 models, 4 data tests, 491 macros
-01:18:57  
-01:18:57  Concurrency: 2 threads (target='dev')
-01:18:57  
-01:19:00  1 of 2 START sql table model o_omelchenko.my_first_dbt_model ................... [RUN]
-01:19:04  1 of 2 OK created sql table model o_omelchenko.my_first_dbt_model .............. [CREATE TABLE (2.0 rows, 0 processed) in 4.44s]
-01:19:04  2 of 2 START sql view model o_omelchenko.my_second_dbt_model ................... [RUN]
-01:19:06  2 of 2 OK created sql view model o_omelchenko.my_second_dbt_model .............. [CREATE VIEW (0 processed) in 2.13s]
-01:19:06  
-01:19:06  Finished running 1 table model, 1 view model in 0 hours 0 minutes and 9.64 seconds (9.64s).
-```
-
-If you have any troubles with installation, please contact the course instructor (Oleh Omelchenko) in slack for assist.
-
+It's production-ready and extensible for further exploration in areas like forecasting, segmentation, or cohort analysis.
